@@ -125,9 +125,8 @@ async def _aio_ws_handler(request, handler):
     try:
         await handler(ws)
     finally:
-        # circumvent trio-ized close
         await ws._wsr.close()
-    return ws
+    return ws._wsr
 
 def websocket(path, handler, **kwargs):
     handler = trio_asyncio.aio2trio(handler)
@@ -166,16 +165,17 @@ if __name__ == "__main__":
         return web.Response(text=text)
 
     async def work(ws):
-        while True:
-            async for msg in ws:
-                if msg.type == aiohttp.WSMsgType.TEXT:
-                    try:
-                        msg = json.loads(msg.data)
-                    except Exception as exc:
-                        msg = dict(str=msg.data,exc=str(exc))
-                    await ws.send_json(dict(got=msg))
-                else:
-                    await ws.send_json(dict(got=str(msg)))
+        async for msg in ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                try:
+                    msg = json.loads(msg.data)
+                except Exception as exc:
+                    msg = dict(str=msg.data,exc=str(exc))
+                await ws.send_json(dict(got=msg))
+            elif msg.type in {aiohttp.WSMsgType.CLOSED,aiohttp.WSMsgType.CLOSING}:
+                break
+            else:
+                await ws.send_json(dict(got=str(msg)))
 
     app = web.Application()
     app.add_routes([get('/', handle),
