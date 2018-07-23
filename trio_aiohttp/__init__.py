@@ -13,90 +13,6 @@ from functools import partial
 
 #from ._version import __version__
 
-async def run_app(app, *, host=None, port=None, path=None, sock=None,
-            shutdown_timeout=60.0, ssl_context=None,
-            print=print, backlog=128, access_log_class=aiohttp.helpers.AccessLogger,
-            access_log_format=aiohttp.helpers.AccessLogger.LOG_FORMAT,
-            access_log=aiohttp.log.access_logger,
-            reuse_address=None, reuse_port=None):
-    """Run an app locally"""
-
-    async with trio_asyncio.open_loop() as loop:
-
-        if inspect.iscoroutine(app):
-            app = await app
-
-        runner = web.AppRunner(app, handle_signals=False,
-                        access_log_class=access_log_class,
-                        access_log_format=access_log_format,
-                        access_log=access_log)
-
-        await loop.run_asyncio(runner.setup)
-
-        sites = []
-
-        try:
-            if host is not None:
-                if isinstance(host, (str, bytes, bytearray, memoryview)):
-                    sites.append(web.TCPSite(runner, host, port,
-                                        shutdown_timeout=shutdown_timeout,
-                                        ssl_context=ssl_context,
-                                        backlog=backlog,
-                                        reuse_address=reuse_address,
-                                        reuse_port=reuse_port))
-                else:
-                    for h in host:
-                        sites.append(web.TCPSite(runner, h, port,
-                                            shutdown_timeout=shutdown_timeout,
-                                            ssl_context=ssl_context,
-                                            backlog=backlog,
-                                            reuse_address=reuse_address,
-                                            reuse_port=reuse_port))
-            elif path is None and sock is None or port is not None:
-                sites.append(web.TCPSite(runner, port=port,
-                                    shutdown_timeout=shutdown_timeout,
-                                    ssl_context=ssl_context, backlog=backlog,
-                                    reuse_address=reuse_address,
-                                    reuse_port=reuse_port))
-
-            if path is not None:
-                if isinstance(path, (str, bytes, bytearray, memoryview)):
-                    sites.append(web.UnixSite(runner, path,
-                                        shutdown_timeout=shutdown_timeout,
-                                        ssl_context=ssl_context,
-                                        backlog=backlog))
-                else:
-                    for p in path:
-                        sites.append(web.UnixSite(runner, p,
-                                            shutdown_timeout=shutdown_timeout,
-                                            ssl_context=ssl_context,
-                                            backlog=backlog))
-
-            if sock is not None:
-                if not isinstance(sock, Iterable):
-                    sites.append(web.SockSite(runner, sock,
-                                        shutdown_timeout=shutdown_timeout,
-                                        ssl_context=ssl_context,
-                                        backlog=backlog))
-                else:
-                    for s in sock:
-                        sites.append(web.SockSite(runner, s,
-                                            shutdown_timeout=shutdown_timeout,
-                                            ssl_context=ssl_context,
-                                            backlog=backlog))
-            for site in sites:
-                await loop.run_asyncio(site.start)
-            if print:  # pragma: no branch
-                names = sorted(str(s.name) for s in runner.sites)
-                print("======== Running on {} ========\n"
-                    "(Press CTRL+C to quit)".format(', '.join(names)))
-            await trio.sleep(math.inf)
-        finally:
-            await loop.run_asyncio(runner.cleanup)
-        if hasattr(loop, 'shutdown_asyncgens'):
-            await loop.run_asyncio(loop.shutdown_asyncgens)
-
-
 class _WebSocketResponse:
     """A websocket with a Trio-based public interface"""
     def __init__(self, *args, **kw):
@@ -183,4 +99,13 @@ if __name__ == "__main__":
                     get('/{name}', handle),
                     ])
 
-    trio.run(run_app,app)
+    async def main():
+        async with trio_asyncio.open_loop():
+            runner = web.AppRunner(app)
+            await trio_asyncio.run_asyncio(runner.setup)
+            site = web.TCPSite(runner, 'localhost', 8080)
+            await trio_asyncio.run_asyncio(site.start)
+            await trio.sleep(math.inf)
+
+    trio.run(main)
+
