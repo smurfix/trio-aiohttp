@@ -74,6 +74,7 @@ def view(path, handler, **kwargs):
     return route(hdrs.METH_ANY, path, handler, **kwargs)
 
 if __name__ == "__main__":
+    # sample code exercising some of what we have so far
     async def handle(request):
         name = request.match_info.get('name', "Anonymous")
         text = "Hello, " + name
