@@ -73,6 +73,32 @@ def delete(path, handler, **kwargs):
 def view(path, handler, **kwargs):
     return route(hdrs.METH_ANY, path, handler, **kwargs)
 
+async def run(app, *args, _interface=web.TCPSite, **kwargs):
+    """Run an aiohttp web app under Trio.
+    
+    Usage::
+        from trio_aiohttp import run,get,websocket
+        from aiohttp import web
+
+        app = web.Application()
+        app.add_routes([get('/', handle_static),
+                        websocket('/_ws', run_websock),
+                        get('/{name}', handle_static),
+                        ])
+
+        await run(app, 'localhost', 8080)
+    """
+    async with trio_asyncio.open_loop():
+        runner = web.AppRunner(app)
+        await trio_asyncio.run_asyncio(runner.setup)
+        site = _interface(runner, *args, **kwargs)
+        await trio_asyncio.run_asyncio(site.start)
+        try:
+            await trio.sleep(math.inf)
+        finally:
+            await trio_asyncio.run_asyncio(site.stop)
+
+
 if __name__ == "__main__":
     # sample code exercising some of what we have so far
     async def handle(request):
@@ -101,12 +127,7 @@ if __name__ == "__main__":
                     ])
 
     async def main():
-        async with trio_asyncio.open_loop():
-            runner = web.AppRunner(app)
-            await trio_asyncio.run_asyncio(runner.setup)
-            site = web.TCPSite(runner, 'localhost', 8080)
-            await trio_asyncio.run_asyncio(site.start)
-            await trio.sleep(math.inf)
+        await run(app, 'localhost', 8080)
 
     trio.run(main)
 
