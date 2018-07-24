@@ -11,6 +11,8 @@ import json
 
 from functools import partial
 
+__all__ = "websocket route head get post put patch delete view run".split()
+
 #from ._version import __version__
 
 class _WebSocketResponse:
