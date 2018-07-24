@@ -131,5 +131,8 @@ if __name__ == "__main__":
     async def main():
         await run(app, 'localhost', 8080)
 
-    trio.run(main)
+    try:
+        trio.run(main)
+    except KeyboardInterrupt:
+        pass
 
