@@ -1,6 +1,6 @@
 /files
 /*.log
 /*.debhelper
-/debhelper-build-stamp
 /*.substvars
+/debhelper-build-stamp
 /python3-trio-aiohttp
