@@ -13,7 +13,7 @@ PACKAGE = trio_aiohttp
 PYTHON ?= python3
 export PYTHONPATH=$(shell pwd)
 
-PYTEST ?= ${PYTHON} $(shell which pytest-3)
+PYTEST ?= ${PYTHON} -m pytest
 TEST_OPTIONS ?= -xvvv --full-trace
 PYLINT_RC ?= .pylintrc
 
@@ -39,7 +39,7 @@ livehtml: docs
 	sphinx-autobuild $(AUTOSPHINXOPTS) $(ALLSPHINXOPTS) $(SPHINXBUILDDIR)
 
 test:
-	$(PYTEST) $(PACKAGE) $(TEST_OPTIONS)
+	$(PYTEST) tests/ $(TEST_OPTIONS)
 
 
 tag:
@@ -55,5 +55,5 @@ upload: pypi
 	git push-all --tags
 
 update:
-	pip install -r ci/test-requirements.txt
+	${PYTHON} -m pip install -r ci/test-requirements.txt
 
