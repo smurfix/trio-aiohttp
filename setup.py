@@ -12,7 +12,7 @@ setup(
     long_description=LONG_DESC,
     author="Matthias Urlichs",
     author_email="matthias@urlichs.de",
-    license="GPLv3 or later",
+    license="MIT -or- Apache License 2.0",
     packages=find_packages(),
     install_requires=[
         "trio-asyncio",
@@ -23,7 +23,8 @@ setup(
     ],
     python_requires=">=3.5",
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache Software License",
         "Framework :: Trio",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: Implementation :: CPython",

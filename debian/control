@@ -19,7 +19,7 @@ Description: Helpers for running aiohttp under Trio
  this code allows you to run a basic Trio-based web server, including WobSocket
  supprt.
  .
- License: GPLv3 as published by the Free Software Foundation, or (at your option) any later version
+ License: Like trio, trio-asyncio is licensed under both the MIT and Apache licenses.
  .
  .
 
