@@ -1,3 +1,9 @@
+++++++++
+inactive
+++++++++
+
+This project is no longer active. For a reasonable trio-compatible http client check "asks", for a server framework I recommend "quart".
+
 trio-aiohttp
 ============
 
